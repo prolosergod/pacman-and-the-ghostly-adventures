@@ -8,13 +8,11 @@ export default class Enemy {
     this.velocity = velocity;
     this.tileMap = tileMap;
 
-    this.#loadImages();
+    this.loadImages();
 
-    this.movingDirection = Math.floor(
-      Math.random() * Object.keys(MovingDirection).length
-    );
+    this.movingDirection = Math.floor(Math.random() * Object.keys(MovingDirection).length);
 
-    this.directionTimerDefault = this.#random(10, 25);
+    this.directionTimerDefault = this.random(10, 25);
     this.directionTimer = this.directionTimerDefault;
 
     this.scaredAboutToExpireTimerDefault = 10;
@@ -23,74 +21,56 @@ export default class Enemy {
 
   draw(ctx, pause, pacman) {
     if (!pause) {
-      this.#move();
-      this.#changeDirection();
+      this.move();
+      this.changeDirection();
     }
-    this.#setImage(ctx, pacman);
+    this.setImage(ctx, pacman);
   }
 
   collideWith(pacman) {
     const size = this.tileSize / 2;
-    if (
-      this.x < pacman.x + size &&
-      this.x + size > pacman.x &&
-      this.y < pacman.y + size &&
-      this.y + size > pacman.y
-    ) {
-      return true;
-    } else {
-      return false;
-    }
+    return (
+      Math.abs(this.x - pacman.x) < size &&
+      Math.abs(this.y - pacman.y) < size
+    );
   }
 
-  #setImage(ctx, pacman) {
+  setImage(ctx, pacman) {
     if (pacman.powerDotActive) {
-      this.#setImageWhenPowerDotIsActive(pacman);
+      this.setImageWhenPowerDotIsActive(pacman);
     } else {
       this.image = this.normalGhost;
     }
     ctx.drawImage(this.image, this.x, this.y, this.tileSize, this.tileSize);
   }
 
-  #setImageWhenPowerDotIsActive(pacman) {
+  setImageWhenPowerDotIsActive(pacman) {
     if (pacman.powerDotAboutToExpire) {
       this.scaredAboutToExpireTimer--;
       if (this.scaredAboutToExpireTimer === 0) {
         this.scaredAboutToExpireTimer = this.scaredAboutToExpireTimerDefault;
-        if (this.image === this.scaredGhost) {
-          this.image = this.scaredGhost2;
-        } else {
-          this.image = this.scaredGhost;
-        }
+        this.image = this.image === this.scaredGhost? this.scaredGhost2 : this.scaredGhost;
       }
     } else {
       this.image = this.scaredGhost;
     }
   }
 
-  #changeDirection() {
+  changeDirection() {
     this.directionTimer--;
     let newMoveDirection = null;
-    if (this.directionTimer == 0) {
+    if (this.directionTimer === 0) {
       this.directionTimer = this.directionTimerDefault;
-      newMoveDirection = Math.floor(
-        Math.random() * Object.keys(MovingDirection).length
-      );
+      newMoveDirection = Math.floor(Math.random() * Object.keys(MovingDirection).length);
       if (
-        newMoveDirection != null &&
-        this.movingDirection != newMoveDirection
+        newMoveDirection!== null &&
+        this.movingDirection!== newMoveDirection
       ) {
         if (
           Number.isInteger(this.x / this.tileSize) &&
           Number.isInteger(this.y / this.tileSize)
         ) {
-          if (
-            !this.tileMap.didCollideWithEnvironment(
-              this.x,
-              this.y,
-              newMoveDirection
-            )
-          ) {
+          if (!this.tileMap.didCollideWithEnvironment(this.x, this.y, newMoveDirection)) {
             this.movingDirection = newMoveDirection;
           }
         }
@@ -98,14 +78,8 @@ export default class Enemy {
     }
   }
 
-  #move() {
-    if (
-      !this.tileMap.didCollideWithEnvironment(
-        this.x,
-        this.y,
-        this.movingDirection
-      )
-    ) {
+  move() {
+    if (!this.tileMap.didCollideWithEnvironment(this.x, this.y, this.movingDirection)) {
       switch (this.movingDirection) {
         case MovingDirection.up:
           this.y -= this.velocity;
@@ -122,19 +96,37 @@ export default class Enemy {
     }
   }
 
-  #random(min, max) {
+  random(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  #loadImages() {
+  loadImages() {
     this.normalGhost = new Image();
     this.normalGhost.src = "images/ghost.png";
+    this.normalGhost.onload = () => {
+      console.log("Normal ghost image loaded");
+    };
+    this.normalGhost.onerror = () => {
+      console.error("Error loading normal ghost image");
+    };
 
     this.scaredGhost = new Image();
     this.scaredGhost.src = "images/scaredGhost.png";
+    this.scaredGhost.onload = () => {
+      console.log("Scared ghost image loaded");
+   };
+    this.scaredGhost.onerror = () => {
+      console.error("Error loading scared ghost image");
+    };
 
     this.scaredGhost2 = new Image();
     this.scaredGhost2.src = "images/scaredGhost2.png";
+    this.scaredGhost2.onload = () => {
+      console.log("Scared ghost 2 image loaded");
+    };
+    this.scaredGhost2.onerror = () => {
+      console.error("Error loading scared ghost 2 image");
+    };
 
     this.image = this.normalGhost;
   }
