@@ -221,5 +221,6 @@ export default class TileMap {
         return true;
       }
     }
+    return false;
   }
 }
